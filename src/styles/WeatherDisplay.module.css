@@ -1,0 +1,21 @@
+.weatherDisplay {
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.temperature {
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.condition {
+  font-size: 24px;
+}
+
+.weatherIcon {
+  width: 100px;
+  height: 100px;
+}

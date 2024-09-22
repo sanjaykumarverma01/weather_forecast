@@ -1,0 +1,15 @@
+.forecastCard {
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+  text-align: center;
+  flex: 1;
+  min-width: 120px;
+}
+
+.fiveDayForecast {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
