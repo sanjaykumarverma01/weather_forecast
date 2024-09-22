@@ -2,14 +2,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
 import styles from "../styles/CitySearch.module.css";
 
+const preDefineCities = ["Mumbai", "Delhi", "Lucknow", "Pune", "Nashik"];
+
 function CitySearch({ onCitySearch }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState(preDefineCities);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchCitySuggestions = useCallback(async (input) => {
     if (input.length < 2) {
-      setSuggestions([]);
+      setSuggestions(preDefineCities);
       return;
     }
 
@@ -25,7 +28,7 @@ function CitySearch({ onCitySearch }) {
       setSuggestions(data.map((city) => `${city.name}, ${city.country}`));
     } catch (error) {
       console.error("Error fetching suggestions:", error);
-      setSuggestions([]);
+      setSuggestions(preDefineCities); // Revert to preloaded cities on error
     } finally {
       setIsLoading(false);
     }
@@ -39,50 +42,78 @@ function CitySearch({ onCitySearch }) {
   );
 
   useEffect(() => {
-    debouncedFetchSuggestions(searchTerm);
+    if (searchTerm.trim()) {
+      debouncedFetchSuggestions(searchTerm);
+    } else {
+      setSuggestions(preDefineCities);
+    }
   }, [searchTerm, debouncedFetchSuggestions]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       onCitySearch(searchTerm);
-      setSuggestions([]);
+      setIsModalOpen(false);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion);
     onCitySearch(suggestion);
-    setSuggestions([]);
+    setIsModalOpen(false);
   };
 
   return (
     <div className={styles.searchContainer}>
-      <form className={styles.searchForm} onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Enter city name"
-          className={styles.searchInput}
-        />
-        <button type="submit" className={styles.searchButton}>
-          Search
-        </button>
-      </form>
-      {isLoading && <p className={styles.loading}>Loading suggestions...</p>}
-      {suggestions.length > 0 && (
-        <ul className={styles.suggestionsList}>
-          {suggestions.map((suggestion, index) => (
-            <li
-              key={index}
-              onClick={() => handleSuggestionClick(suggestion)}
-              className={styles.suggestionItem}
-            >
-              {suggestion}
-            </li>
-          ))}
-        </ul>
+      <input
+        type="text"
+        value={searchTerm}
+        onClick={() => setIsModalOpen(true)}
+        placeholder="Select a city"
+        readOnly
+        className={styles.searchInput}
+      />
+
+      {isModalOpen && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <form className={styles.searchForm} onSubmit={handleSubmit}>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search for a city"
+                className={styles.searchInput}
+              />
+              <button type="submit" className={styles.searchButton}>
+                Search
+              </button>
+            </form>
+
+            {isLoading && (
+              <p className={styles.loading}>Loading suggestions...</p>
+            )}
+
+            {suggestions.length > 0 && (
+              <ul className={styles.suggestionsList}>
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className={styles.suggestionItem}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setIsModalOpen(false)}
+          />
+        </div>
       )}
     </div>
   );
